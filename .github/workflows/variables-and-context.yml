@@ -76,8 +76,8 @@ jobs:
           echo $VAR2
 
           echo $VAR3
-        env: 
-          VAR3: mystepvar3
+          env: 
+            VAR3: mystepvar3
 
   job5:
       runs-on: ubuntu-latest
