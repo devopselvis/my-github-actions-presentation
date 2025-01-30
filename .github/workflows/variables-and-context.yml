@@ -81,6 +81,7 @@ jobs:
 
   job5:
       runs-on: ubuntu-latest
+      needs: job4
       steps:
         - run: |
             echo $VAR1
