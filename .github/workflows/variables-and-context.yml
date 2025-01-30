@@ -78,3 +78,14 @@ jobs:
           echo $VAR3
         env: 
           VAR3: mystepvar3
+
+  job5:
+      runs-on: ubuntu-latest
+      steps:
+        - run: |
+            echo $VAR1
+            echo ${{env.VAR1}}
+            echo ""
+            echo $VAR2
+            echo $VAR3
+          
