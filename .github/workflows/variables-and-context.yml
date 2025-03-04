@@ -16,6 +16,7 @@ on:
         # Input has to be provided for the workflow to run
         required: true
 
+# global variable delearation 
 env:
   VAR1: myworkflowvar1
   VAR2: myworkflowvar2
@@ -30,7 +31,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Dump GitHub context
-        env:
+        env:     # local env variable jsut for this step 
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: echo "$GITHUB_CONTEXT"
       
@@ -38,7 +39,7 @@ jobs:
   job2:
     runs-on: ubuntu-latest
     
-    outputs:
+    outputs: # makes this values available to future jobs
       output1: ${{ steps.step1.outputs.step1value }}
       output2: ${{ steps.step2.outputs.step2value }}
     
@@ -46,12 +47,13 @@ jobs:
       - name: Step 1
         id: step1
         # run: echo "::set-output name=step1value::hello"
-        run: echo "step1value=hello" >> $GITHUB_OUTPUT
+        run: echo "step1value=hello" >> $GITHUB_OUTPUT # values exists only inside this job/life of this job
 
       - name: Step 2
         id: step2
         # run: echo "::set-output name=step2value::world"
-        run: echo "step2value=world" >> $GITHUB_OUTPUT
+        run: echo "step2value=world" >> $GITHUB_OUTPUT # values exists only inside this job/life of this job
+
   
   job3:
     runs-on: ubuntu-latest
@@ -62,7 +64,7 @@ jobs:
   # access/set env variables
   job4:
     runs-on: ubuntu-latest
-    env:
+    env: # job level declearton
       VAR2: myjobvar2
       VAR3: myjobvar3
     steps:
