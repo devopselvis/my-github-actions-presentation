@@ -6,7 +6,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: '${appName}-plan'
   location: location
   sku: {
-    name: 'P1v3'
+    name: 'P1v3'          // Use PremiumV3 P1v3 SKU (see Azure documentation for valid SKUs)
     tier: 'PremiumV3'
     size: 'P1v3'
   }
