@@ -6,9 +6,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: '${appName}-plan'
   location: location
   sku: {
-    name: 'P1v3'
-    tier: 'PremiumV3'
-    size: 'P1v3'
+    name: 'S1' 
+    tier: 'Standard'
+    size: 'S1'
   }
   properties: {
     reserved: true // For Linux-based hosting
