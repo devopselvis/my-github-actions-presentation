@@ -22,7 +22,7 @@ webAppName=$8
 
 # Deploy the Bicep template to create the resource group
 echo "Deploying Bicep template to create resource group..."
-az deployment sub create --location $location --name MAINmickeyg-$LOCATION --template-file main.bicep --parameters resourceGroupName=$resourceGroupName location=$location webappname=$webAppName --debug
+az deployment sub create --location $location --name MAINmickeyg-$location --template-file main.bicep --parameters resourceGroupName=$resourceGroupName location=$location webappname=$webAppName --debug
 # Check if the deployment was successful
 if [ $? -ne 0 ]; then
     echo "Failed to deploy the Bicep template."
