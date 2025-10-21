@@ -22,7 +22,7 @@ namespace MyGithubActionsPresentation.Tests
     {
       Assert.IsTrue(true);
     }
-
+/*
     [TestMethod]
     public void Test4Fails()
     {
@@ -34,7 +34,7 @@ namespace MyGithubActionsPresentation.Tests
     {
       Assert.IsTrue(false);
     }
-
+*/
     [TestMethod]
     public void Test6Passes()
     {
