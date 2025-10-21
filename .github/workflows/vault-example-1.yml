@@ -17,10 +17,10 @@ jobs:
           url: ${{ secrets.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
-            secret/data/ci/aws accessKey2 | AWS_ACCESS_KEY_ID ;
-            secret/data/ci/aws secretKey2 | AWS_SECRET_ACCESS_KEY ;
-            secret/data/ci npm_token2 | NPM_TOKEN;
-            secret/data/blah blahblah | BLAH_BLAH;
+            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+            secret/data/ci npm_token | NPM_TOKEN;
+            
 
       - name: Use the secrets in deployment
         run: |
