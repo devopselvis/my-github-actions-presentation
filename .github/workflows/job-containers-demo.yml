@@ -1,0 +1,372 @@
+name: Job Containers Demo
+
+# This workflow demonstrates various aspects of using job containers in GitHub Actions
+# It showcases different container configurations, service containers, and container networking
+
+# Manual trigger - allows you to run this workflow on-demand for demonstration purposes
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to demo'
+        required: false
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+jobs:
+  # Job 1: Basic container usage with a simple Node.js application
+  basic-container-job:
+    name: "Basic Container Job"
+    # Run this job inside a Node.js container
+    container:
+      image: node:18-alpine
+      # Set environment variables inside the container
+      env:
+        NODE_ENV: ${{ github.event.inputs.environment || 'development' }}
+        CUSTOM_VAR: "Running in container!"
+      # Container run options (equivalent to docker run options)
+      options: --cpus 1
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Display container information
+        run: |
+          echo "🐳 Running inside container!"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Operating System: $(cat /etc/os-release | grep PRETTY_NAME)"
+          echo "Environment: $NODE_ENV"
+          echo "Custom Variable: $CUSTOM_VAR"
+          echo "Current user: $(whoami)"
+          echo "Working directory: $(pwd)"
+      
+      - name: Install dependencies and run basic Node.js commands
+        run: |
+          # Create a simple package.json
+          cat > package.json << EOF
+          {
+            "name": "container-demo",
+            "version": "1.0.0",
+            "dependencies": {
+              "lodash": "^4.17.21"
+            }
+          }
+          EOF
+          
+          # Install dependencies
+          npm install
+          
+          # Create and run a simple Node.js script
+          cat > demo.js << EOF
+          const _ = require('lodash');
+          console.log('🎉 Successfully running Node.js in container!');
+          console.log('Lodash version:', _.VERSION);
+          console.log('Environment:', process.env.NODE_ENV);
+          EOF
+          
+          node demo.js
+
+  # Job 2: Container with service containers (database)
+  container-with-services:
+    name: "Container with Database Service"
+    # Run the job in a Python container
+    container:
+      image: python:3.11-slim
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@postgres:5432/testdb
+    
+    runs-on: ubuntu-latest
+    
+    # Service containers run alongside the job container
+    services:
+      # PostgreSQL service container
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        # Health check to ensure postgres is ready
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      # Redis service container
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y postgresql-client redis-tools curl
+      
+      - name: Install Python dependencies
+        run: |
+          pip install psycopg2-binary redis requests
+      
+      - name: Test database connectivity
+        run: |
+          echo "🐘 Testing PostgreSQL connection..."
+          # Test PostgreSQL connection
+          PGPASSWORD=testpass psql -h postgres -U testuser -d testdb -c "
+            CREATE TABLE IF NOT EXISTS demo_table (
+              id SERIAL PRIMARY KEY,
+              message TEXT,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            INSERT INTO demo_table (message) VALUES ('Hello from container!');
+            SELECT * FROM demo_table;
+          "
+      
+      - name: Test Redis connectivity
+        run: |
+          echo "🔴 Testing Redis connection..."
+          # Test Redis connection
+          redis-cli -h redis ping
+          redis-cli -h redis set demo_key "Hello Redis from container!"
+          redis-cli -h redis get demo_key
+      
+      - name: Run Python application with service connections
+        run: |
+          cat > app.py << 'EOF'
+          import psycopg2
+          import redis
+          import os
+          
+          # Connect to PostgreSQL
+          print("🐘 Connecting to PostgreSQL...")
+          conn = psycopg2.connect(os.environ['DATABASE_URL'])
+          cur = conn.cursor()
+          cur.execute("SELECT message, created_at FROM demo_table ORDER BY created_at DESC LIMIT 1;")
+          result = cur.fetchone()
+          print(f"Latest database entry: {result[0]} at {result[1]}")
+          cur.close()
+          conn.close()
+          
+          # Connect to Redis
+          print("🔴 Connecting to Redis...")
+          r = redis.Redis(host='redis', port=6379, decode_responses=True)
+          cached_value = r.get('demo_key')
+          print(f"Cached value: {cached_value}")
+          
+          print("✅ All service connections successful!")
+          EOF
+          
+          python app.py
+
+  # Job 3: Multiple containers with different configurations
+  multi-container-demo:
+    name: "Multi-Container Configuration Demo"
+    
+    strategy:
+      matrix:
+        container_config:
+          - name: "Alpine Linux"
+            image: "alpine:latest"
+            setup_cmd: "apk add --no-cache curl jq"
+          - name: "Ubuntu"
+            image: "ubuntu:22.04"
+            setup_cmd: "apt-get update && apt-get install -y curl jq"
+          - name: "Amazon Linux"
+            image: "amazonlinux:2"
+            setup_cmd: "yum update -y && yum install -y curl jq"
+    
+    container:
+      image: ${{ matrix.container_config.image }}
+      # Demonstrate container options
+      options: >-
+        --user root
+        --workdir /workspace
+        --env DEMO_OS=${{ matrix.container_config.name }}
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup container environment
+        run: |
+          echo "🐳 Setting up ${{ matrix.container_config.name }} container..."
+          ${{ matrix.container_config.setup_cmd }}
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Display container details
+        run: |
+          echo "📋 Container Information:"
+          echo "OS: $DEMO_OS"
+          echo "Image: ${{ matrix.container_config.image }}"
+          echo "Kernel: $(uname -r)"
+          echo "Architecture: $(uname -m)"
+          if [ -f /etc/os-release ]; then
+            echo "OS Release Info:"
+            cat /etc/os-release
+          fi
+          echo "Available tools:"
+          which curl jq || echo "Tools not found"
+      
+      - name: Test network connectivity from container
+        run: |
+          echo "🌐 Testing network connectivity..."
+          curl -s https://api.github.com/repos/actions/runner | jq '.name, .description'
+
+  # Job 4: Container with custom credentials and registry
+  custom-container-job:
+    name: "Custom Container Configuration"
+    
+    container:
+      # Using a publicly available container (no auth needed for demo)
+      image: nginx:alpine
+      # Demonstrate various container options
+      options: >-
+        --user root
+        --workdir /usr/share/nginx/html
+        --env NGINX_HOST=localhost
+        --env NGINX_PORT=80
+      # Optional: credentials for private registries (commented out for demo)
+      # credentials:
+      #   username: ${{ secrets.DOCKER_USERNAME }}
+      #   password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Customize nginx container
+        run: |
+          echo "🌐 Customizing Nginx container..."
+          
+          # Show nginx version and config
+          nginx -v
+          echo "Default nginx config location: $(nginx -t 2>&1 | grep 'test is successful' -B2 | head -1)"
+          
+          # Create a custom index.html
+          cat > index.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>GitHub Actions Container Demo</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .container { max-width: 800px; margin: 0 auto; }
+                  .highlight { background-color: #f0f8ff; padding: 20px; border-radius: 5px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🐳 GitHub Actions Job Container Demo</h1>
+                  <div class="highlight">
+                      <p><strong>Container Image:</strong> nginx:alpine</p>
+                      <p><strong>Workflow:</strong> ${{ github.workflow }}</p>
+                      <p><strong>Run ID:</strong> ${{ github.run_id }}</p>
+                      <p><strong>Environment:</strong> ${{ github.event.inputs.environment || 'development' }}</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+          echo "📄 Created custom HTML file:"
+          cat index.html
+      
+      - name: Test nginx functionality
+        run: |
+          echo "🧪 Testing Nginx functionality..."
+          
+          # Start nginx in background
+          nginx &
+          NGINX_PID=$!
+          
+          # Wait for nginx to start
+          sleep 2
+          
+          # Test if nginx is serving our custom page
+          if command -v curl >/dev/null 2>&1; then
+            echo "Testing HTTP response:"
+            curl -s http://localhost/ | head -10
+          else
+            echo "curl not available, installing..."
+            apk add --no-cache curl
+            curl -s http://localhost/ | head -10
+          fi
+          
+          # Stop nginx
+          kill $NGINX_PID
+
+  # Job 5: Demonstrate container networking and volume mounting concepts
+  networking-demo:
+    name: "Container Networking Demo"
+    
+    container:
+      image: curlimages/curl:latest
+      options: --user root
+    
+    runs-on: ubuntu-latest
+    
+    services:
+      # Web server service for networking demo
+      web-server:
+        image: httpd:2.4-alpine
+        ports:
+          - 8080:80
+        options: >-
+          --name demo-web-server
+    
+    steps:
+      - name: Install additional tools
+        run: |
+          # Switch to root and install tools (curl image is minimal)
+          apk add --no-cache nmap-ncat jq
+      
+      - name: Test container networking
+        run: |
+          echo "🔗 Testing container networking..."
+          
+          # Test connection to service container by name
+          echo "Testing connection to web-server service:"
+          curl -s http://web-server/ || echo "Service not accessible by name"
+          
+          # Test connection to localhost (should work due to port mapping)
+          echo "Testing connection via localhost port mapping:"
+          curl -s http://localhost:8080/ | head -5
+          
+          # Show network configuration
+          echo "Network information:"
+          ip addr show || ifconfig
+          
+          # Test DNS resolution
+          echo "DNS resolution test:"
+          nslookup web-server || echo "DNS lookup failed"
+      
+      - name: Demonstrate environment isolation
+        run: |
+          echo "🔒 Demonstrating container isolation..."
+          
+          echo "Container process information:"
+          ps aux | head -10
+          
+          echo "Container filesystem:"
+          df -h
+          
+          echo "Container network interfaces:"
+          ip link show || echo "ip command not available"
