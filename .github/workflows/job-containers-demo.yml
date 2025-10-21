@@ -183,12 +183,15 @@ jobs:
           - name: "Alpine Linux"
             image: "alpine:latest"
             setup_cmd: "apk add --no-cache curl jq"
+            env_name: "Alpine_Linux"
           - name: "Ubuntu"
             image: "ubuntu:22.04"
             setup_cmd: "apt-get update && apt-get install -y curl jq"
+            env_name: "Ubuntu"
           - name: "Amazon Linux"
             image: "amazonlinux:2"
             setup_cmd: "yum update -y && yum install -y curl jq"
+            env_name: "Amazon_Linux"
     
     container:
       image: ${{ matrix.container_config.image }}
@@ -196,7 +199,7 @@ jobs:
       options: >-
         --user root
         --workdir /workspace
-        --env DEMO_OS=${{ matrix.container_config.name }}
+        --env DEMO_OS=${{ matrix.container_config.env_name }}
     
     runs-on: ubuntu-latest
     
@@ -212,7 +215,8 @@ jobs:
       - name: Display container details
         run: |
           echo "📋 Container Information:"
-          echo "OS: $DEMO_OS"
+          echo "OS: ${{ matrix.container_config.name }}"
+          echo "Environment Variable: $DEMO_OS"
           echo "Image: ${{ matrix.container_config.image }}"
           echo "Kernel: $(uname -r)"
           echo "Architecture: $(uname -m)"
