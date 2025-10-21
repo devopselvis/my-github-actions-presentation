@@ -26,7 +26,7 @@ jobs:
       - job-1
     steps:
       - name: Output for Job 2
-        run: echo "Hello from Job 2"
+        run: exit 1
     
   job-3:
     name: Job 3
@@ -41,7 +41,7 @@ jobs:
   job-4:
     name: Job 4
     runs-on: ubuntu-latest
-    #if: always() 
+    if: always() 
     needs:
       - job-2
       - job-3
