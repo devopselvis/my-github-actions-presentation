@@ -188,10 +188,10 @@ jobs:
             image: "ubuntu:22.04"
             setup_cmd: "apt-get update && apt-get install -y curl jq"
             env_name: "Ubuntu"
-          - name: "Amazon Linux"
-            image: "amazonlinux:2"
-            setup_cmd: "yum update -y && yum install -y curl jq"
-            env_name: "Amazon_Linux"
+          #- name: "Amazon Linux"
+          #  image: "amazonlinux:2"
+          #  setup_cmd: "yum update -y && yum install -y curl jq"
+          #  env_name: "Amazon_Linux"
     
     container:
       image: ${{ matrix.container_config.image }}
