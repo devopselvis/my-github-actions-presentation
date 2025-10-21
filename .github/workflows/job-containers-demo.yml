@@ -310,8 +310,11 @@ jobs:
             curl -s http://localhost/ | head -10
           fi
           
-          # Stop nginx
-          kill $NGINX_PID
+          if [ -n "$NGINX_PID" ] && kill -0 "$NGINX_PID" 2>/dev/null; then
+            kill $NGINX_PID
+          else
+            echo "nginx process not running or already stopped"
+          fi
 
   # Job 5: Demonstrate container networking and volume mounting concepts
   networking-demo:
