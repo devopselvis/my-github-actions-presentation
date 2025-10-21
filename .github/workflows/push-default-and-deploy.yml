@@ -92,9 +92,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     environment:
-      name: DEV
-      url: http://my-web-app-please-work-dev.azurewebsites.net/
-
+      name: DEV 
+      url: https://${{ vars.WEB_APP_NAME }}-dev.azurewebsites.net/
+      
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -126,7 +126,7 @@ jobs:
     needs: build-and-test
     environment:
       name: STAGING
-      url: http://my-web-app-please-work-staging.azurewebsites.net/
+      url: https://${{ vars.WEB_APP_NAME }}-staging.azurewebsites.net/
 
     steps:
       - name: Download artifact
@@ -156,7 +156,7 @@ jobs:
       - deploy-to-staging
     environment:
       name: PROD
-      url: http://my-web-app-please-work-prod.azurewebsites.net/
+      url: https://${{ vars.WEB_APP_NAME }}-prod.azurewebsites.net/
 
     steps:
       - name: Download artifact
