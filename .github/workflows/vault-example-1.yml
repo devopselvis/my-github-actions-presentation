@@ -1,0 +1,36 @@
+name: Vault example 1 - Retrieve secrets from Vault
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Retrieve secrets from Vault
+        id: vault-secrets
+        uses: hashicorp/vault-action@v3.4.0
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+            secret/data/ci npm_token | NPM_TOKEN
+
+      - name: Use the secrets in deployment
+        run: |
+          # Example: Run a command using secrets
+          echo "Deploying with access key ID (masked): $AWS_ACCESS_KEY_ID"
+          # The actual values are masked in logs for security
+          
+      - name: Configure AWS credentials (example)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Your deployment commands here
+          echo "AWS credentials configured"
