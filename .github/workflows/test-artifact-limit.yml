@@ -64,11 +64,13 @@ jobs:
                 console.error(`  ✗ Failed to upload ${artifactName}`);
                 console.error(`  Error: ${error.message}`);
                 
-                // If we hit the limit, report and exit
-                if (error.message.includes('maximum') || error.message.includes('limit') || i >= 500) {
-                  console.error(`\n❌ LIMIT REACHED at artifact ${i + 1}`);
+                // Report when we hit the artifact limit and exit
+                // i is 0-indexed, so i=500 means we're uploading the 501st artifact
+                if (error.message.includes('maximum') || error.message.includes('limit') || (i + 1) > 500) {
+                  console.error(`\n❌ ARTIFACT LIMIT REACHED at artifact ${i + 1}`);
                   console.error(`Successfully uploaded: ${successCount} artifacts`);
                   console.error(`Failed uploads: ${failCount} artifacts`);
+                  console.error(`Expected limit: 500 artifacts per workflow run`);
                   throw error;
                 }
               }
