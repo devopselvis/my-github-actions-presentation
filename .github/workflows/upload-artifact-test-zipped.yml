@@ -11,6 +11,8 @@ jobs:
   test-zipped-upload:
     name: Test uploading 501 files as a single zip file
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Create 501 test files

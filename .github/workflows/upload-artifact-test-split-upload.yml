@@ -11,6 +11,8 @@ jobs:
   test-split-upload:
     name: Test uploading 501 files in two separate upload-artifact steps
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Create 501 test files

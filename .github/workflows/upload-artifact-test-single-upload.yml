@@ -11,6 +11,8 @@ jobs:
   test-single-upload:
     name: Test uploading 501 files in a single upload-artifact step
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Create 501 test files
