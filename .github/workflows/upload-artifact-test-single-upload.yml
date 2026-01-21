@@ -1,7 +1,7 @@
 # Workflow to test upload-artifact action with 1000 files in 1000 separate uploads
 # This tests uploading many individual files
 
-name: Upload Artifact Test - Single Upload
+name: Upload Artifact Test - 1000 Upload
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI or API.
 on:
