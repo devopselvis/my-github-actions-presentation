@@ -1,0 +1,30 @@
+# Workflow to test upload-artifact action with 501 files in a single upload
+# This tests the 500 file limit mentioned in https://github.com/actions/upload-artifact
+
+name: Upload Artifact Test - Single Upload
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI or API.
+on:
+  workflow_dispatch:
+
+jobs:
+  test-single-upload:
+    name: Test uploading 501 files in a single upload-artifact step
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Create 501 test files
+        run: |
+          mkdir -p test-files
+          for i in {1..501}; do
+            echo "This is test file number $i" > test-files/file-$i.txt
+          done
+          echo "Created $(ls test-files | wc -l) files"
+
+      - name: Upload all 501 files in a single step
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-501-files-single-upload
+          path: test-files/
