@@ -1,0 +1,33 @@
+name: Upload Artifact Test - 1000 individual upload steps
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI or API.
+on:
+  workflow_dispatch:
+    inputs:
+      number_of_files:
+        description: 'Number of files to create'
+        required: true
+        default: '501'
+        type: number
+
+jobs:
+  test-single-upload:
+    name: Test uploading files in a single upload-artifact step
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Create test files
+        run: |
+          mkdir -p test-files
+          for i in $(seq 1 ${{ inputs.number_of_files }}); do
+            echo "This is test file number $i" > test-files/file-$i.txt
+          done
+          echo "Created $(ls test-files | wc -l) files"
+
+      - name: Upload all files in a single step
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-${{ inputs.number_of_files }}-files-single-upload
+          path: test-files/
