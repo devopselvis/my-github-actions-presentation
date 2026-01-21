@@ -6,6 +6,9 @@ on:
 jobs:
   test-artifact-limit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     
     steps:
       - name: Create 501 test files
