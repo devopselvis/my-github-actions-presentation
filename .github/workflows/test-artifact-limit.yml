@@ -25,12 +25,12 @@ jobs:
       - name: Create upload script
         run: |
           cat > upload-artifacts.js << 'EOF'
-          const { DefaultArtifactClient } = require('@actions/artifact');
+          const artifact = require('@actions/artifact');
           const fs = require('fs');
           const path = require('path');
           
           async function uploadIndividualArtifacts() {
-            const artifactClient = new DefaultArtifactClient();
+            const artifactClient = artifact.create();
             const testFilesDir = 'test-files';
             const files = fs.readdirSync(testFilesDir).sort();
             
@@ -65,14 +65,11 @@ jobs:
                 console.error(`  Error: ${error.message}`);
                 
                 // Report when we hit the artifact limit and exit
-                // i is 0-indexed, so i=500 means we're uploading the 501st artifact
-                if (error.message.includes('maximum') || error.message.includes('limit') || (i + 1) > 500) {
-                  console.error(`\n❌ ARTIFACT LIMIT REACHED at artifact ${i + 1}`);
-                  console.error(`Successfully uploaded: ${successCount} artifacts`);
-                  console.error(`Failed uploads: ${failCount} artifacts`);
-                  console.error(`Expected limit: 500 artifacts per workflow run`);
-                  throw error;
-                }
+                console.error(`\n❌ ARTIFACT LIMIT ERROR at artifact ${i + 1}`);
+                console.error(`Successfully uploaded: ${successCount} artifacts`);
+                console.error(`Failed uploads: ${failCount} artifacts`);
+                console.error(`Expected limit: 500 artifacts per workflow run`);
+                throw error;
               }
             }
             
@@ -87,7 +84,7 @@ jobs:
       
       - name: Install @actions/artifact package
         run: |
-          npm install @actions/artifact
+          npm install @actions/artifact@2.1.10
       
       - name: Attempt to upload 501 files as separate artifacts
         id: upload-individual-artifacts
