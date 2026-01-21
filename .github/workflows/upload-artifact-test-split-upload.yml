@@ -21,23 +21,26 @@ jobs:
           done
           echo "Created $(ls test-files | wc -l) files"
 
+      - name: Create directories for split upload
+        run: |
+          mkdir -p test-files-part1 test-files-part2
+          for i in {1..250}; do
+            cp test-files/file-$i.txt test-files-part1/
+          done
+          for i in {251..501}; do
+            cp test-files/file-$i.txt test-files-part2/
+          done
+          echo "Part 1 has $(ls test-files-part1 | wc -l) files"
+          echo "Part 2 has $(ls test-files-part2 | wc -l) files"
+
       - name: Upload files 1-250
         uses: actions/upload-artifact@v4
         with:
           name: test-501-files-split-upload-part1
-          path: |
-            test-files/file-[1-9].txt
-            test-files/file-[1-9][0-9].txt
-            test-files/file-1[0-9][0-9].txt
-            test-files/file-2[0-4][0-9].txt
-            test-files/file-250.txt
+          path: test-files-part1/
 
       - name: Upload files 251-501
         uses: actions/upload-artifact@v4
         with:
           name: test-501-files-split-upload-part2
-          path: |
-            test-files/file-25[1-9].txt
-            test-files/file-2[6-9][0-9].txt
-            test-files/file-[3-4][0-9][0-9].txt
-            test-files/file-50[0-1].txt
+          path: test-files-part2/
