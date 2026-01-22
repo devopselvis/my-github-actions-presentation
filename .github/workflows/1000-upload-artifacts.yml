@@ -6,6 +6,8 @@ on:
 jobs:
   upload-artifacts:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       # Step to create 1000 files
