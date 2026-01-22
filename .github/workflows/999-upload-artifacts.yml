@@ -1,4 +1,4 @@
-name: Workflow with 1000 Upload Artifacts
+name: Workflow with 999 Upload Artifacts
 
 on:
   workflow_dispatch:
@@ -10,11 +10,11 @@ jobs:
       contents: read
     
     steps:
-      # Step to create 1000 files
-      - name: Create 1000 files
+      # Step to create 999 files
+      - name: Create 999 files
         run: |
           mkdir -p artifacts
-          for i in {1..1000}; do
+          for i in {1..999}; do
             echo "This is file $i" > artifacts/file_$i.txt
           done
 
@@ -6012,8 +6012,4 @@ jobs:
           name: artifact-999
           path: artifacts/file_999.txt
 
-      - name: Upload artifact 1000
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifact-1000
-          path: artifacts/file_1000.txt
+
