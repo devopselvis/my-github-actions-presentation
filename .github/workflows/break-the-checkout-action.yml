@@ -4,7 +4,6 @@ permissions:
   id-token: write
   pages: write
   contents: none
-  
 on:
   workflow_dispatch:
 
